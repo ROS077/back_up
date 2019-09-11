@@ -1,0 +1,73 @@
+# -*- coding: cp1251 -*-
+# October 2018
+
+import glob
+import os
+import datetime
+import shutil
+
+# Настройки:
+# Путь к основному каталогу откуда нужно копировать
+# pathtodata="C:/Users/User/Desktop/for_buss" - c рабочего стола
+pathtodata = "C:/Users/"
+# Название каталогов(папок), которые надо копировать с их содержимым:
+organiz = ["User"] 
+
+# Делаем каталог для копий по текущему времени
+# По умолчанию должен быть создан каталог
+dt = datetime.datetime.now()
+weekday = datetime.datetime.today().isoweekday()# день недели
+currentdate = dt.strftime('%Y_%m_%d_%H-%M') # ('%Y_%m_%d) - hours-minutes
+
+os.mkdir('D:/Back_UP_Scripts/' + 'User_backup_SerScripts_' + currentdate)
+
+
+
+for org in organiz:
+    print(org + " копирование...")
+    # скопируем все каталоги в созданный
+    # копирование дерева  - откуда - куда
+    shutil.copytree('' + pathtodata + '/' + org +  '', 'D:/Back_UP_Scripts/' + 'User_backup_SerScripts_' + currentdate + '/' + org + '_ot_' + currentdate)
+    
+
+# заархивируем все что скопировано
+names = glob.glob('D:/Back_UP_Scripts/' + '*')
+for name in names:
+    if os.path.isdir(name):
+        # архивируем все name, при помощи WinRAR 4.01
+        print (name + " архивирование каталога...")
+        # ключ -df удаляет скопированные каталоги после архивирования
+        os.system(r'c:/"Program Files"/"WinRAR"/rar.exe a -r -ep1 -df ' + name + ' ' + name + ' ')
+
+
+# По пятницам дополнительно архивируем на Я.Диск
+if weekday == 5:
+   for org in organiz:
+       print(org + " копирование...")
+       # скопируем все каталоги в созданный
+       # копирование дерева  - откуда - куда
+       shutil.copytree(''+pathtodata+'/'+org+'', 'C:\\Users\\Администратор\\YandexDisk\\Skripts\\Back_UP_SS\\' + 'User_backup_ServerScripts_' + currentdate + '/' + org + '_ot_' + currentdate)
+
+   # заархивируем все что скопировано
+   names = glob.glob('C:\\Users\\Администратор\\YandexDisk\\Skripts\\Back_UP_SS\\' + '*')
+   for name in names:
+       if os.path.isdir(name):
+           # архивируем все name, при помощи WinRAR 4.01
+           print (name + " архивирование каталога...")
+           # ключ -df удаляет скопированные каталоги после архивирования
+           os.system(r'c:/"Program Files"/"WinRAR"/rar.exe a -r -ep1 -df ' + name + ' ' + name + ' ')
+
+
+
+# Удаление фалов старше 15 дней в директории:
+dir_to_search = 'D:/Back_UP_Scripts/'
+for dirpath, dirnames, filenames in os.walk(dir_to_search):
+   for file in filenames:
+      curpath = os.path.join(dirpath, file)
+      file_modified = datetime.datetime.fromtimestamp(os.path.getmtime(curpath))
+      if datetime.datetime.now() - file_modified > datetime.timedelta(days=15): # (hours=15), (minutes=5), (days=15)
+          os.remove(curpath)
+
+
+ 
+print("Congratulations! Reserve copy is done!")
